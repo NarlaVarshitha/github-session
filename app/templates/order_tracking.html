@@ -1,0 +1,243 @@
+{% load static %}
+
+{% block content %}
+<style>
+  .tracking-container {
+    max-width: 1000px;
+    margin: auto;
+    padding: 30px 20px;
+  }
+
+  .tracking-header {
+    font-size: 32px;
+    font-weight: bold;
+    margin-bottom: 20px;
+    text-align: center;
+  }
+
+  .filter-buttons {
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: center;
+    gap: 10px;
+    margin-bottom: 30px;
+  }
+
+  .filter-buttons button {
+    background-color: #28a745;
+    color: white;
+    padding: 8px 16px;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+  }
+
+  .filter-buttons button:hover {
+    background-color: rgb(202, 31, 28);
+  }
+
+  .order-card {
+    background-color: #fff;
+    border: 1px solid #ccc;
+    border-left: 6px solid #28a745;
+    padding: 20px;
+    border-radius: 10px;
+    margin-bottom: 20px;
+    box-shadow: 0 4px 10px rgba(0, 0, 0, 0.1);
+  }
+
+  .order-card h4 {
+    margin-bottom: 10px;
+  }
+
+  .order-info {
+    margin-bottom: 10px;
+  }
+
+  .order-status {
+    font-weight: bold;
+    color: #007bff;
+  }
+
+  .btn-cancel {
+    background-color: #dc3545;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    cursor: pointer;
+  }
+
+  .btn-download {
+    background-color: #007bff;
+    color: white;
+    padding: 6px 12px;
+    border: none;
+    border-radius: 5px;
+    margin-left: 10px;
+    cursor: pointer;
+  }
+
+  .shop-now-btn {
+    display: inline-block;
+    padding: 10px 20px;
+    background-color: #28a745;
+    color: white;
+    font-weight: bold;
+    text-decoration: none;
+    border-radius: 8px;
+    transition: background-color 0.3s ease;
+  }
+
+  .shop-now-btn:hover {
+    background-color: #218838;
+  }
+
+  .hidden {
+    display: none !important;
+  }
+
+  .empty-animation {
+    text-align: center;
+    margin-top: 40px;
+    animation: fadeIn 1s ease-in-out;
+  }
+
+  .empty-animation p {
+    font-size: 20px;
+    color: #555;
+    margin-top: 15px;
+  }
+
+  .box-animation {
+    position: relative;
+    width: 100px;
+    height: 100px;
+    margin: 0 auto;
+  }
+
+  .box {
+    width: 100px;
+    height: 60px;
+    background-color: #f3f3f3;
+    border: 2px dashed #ccc;
+    animation: float 3s ease-in-out infinite;
+    border-radius: 8px;
+  }
+
+  .lid {
+    position: absolute;
+    top: -10px;
+    left: 15px;
+    width: 70px;
+    height: 10px;
+    background-color: #ccc;
+    border-radius: 4px;
+  }
+
+  @keyframes float {
+    0% {
+      transform: translateY(0px);
+    }
+    50% {
+      transform: translateY(-10px);
+    }
+    100% {
+      transform: translateY(0px);
+    }
+  }
+
+  @keyframes fadeIn {
+    from {
+      opacity: 0;
+      transform: translateY(10px);
+    }
+    to {
+      opacity: 1;
+      transform: translateY(0);
+    }
+  }
+
+  @media (max-width: 600px) {
+    .filter-buttons button {
+      padding: 6px 12px;
+      font-size: 14px;
+    }
+  }
+</style>
+
+<div class="tracking-container">
+  <div class="tracking-header">📦 Order Tracking</div>
+
+  <div class="filter-buttons">
+    <button onclick="filterOrders('All')">All</button>
+    <button onclick="filterOrders('Pending')">Pending</button>
+    <button onclick="filterOrders('Processing')">Processing</button>
+    <button onclick="filterOrders('Shipped')">Shipped</button>
+    <button onclick="filterOrders('Delivered')">Delivered</button>
+    <button onclick="filterOrders('Cancelled')">Cancelled</button>
+  </div>
+
+  <div id="orderList">
+    {% for order in orders %}
+    <div class="order-card" data-status="{{ order.status }}">
+      <div class="order-info">🧾 Total: ${{ order.total_price }}</div>
+      <h4>Order ID: {{ order.id }}</h4>
+      <div class="order-info">📅 Date: {{ order.date_ordered|date:"d M Y" }}</div>
+      <div class="order-info">📍 Address: {{ order.address }}, {{ order.city }} - {{ order.zip_code }}</div>
+      <div class="order-info">☎️ Phone: {{ order.phone }}</div>
+      <div class="order-info">💰 Payment: {{ order.payment_method }}</div>
+      <div class="order-info order-status">🚚 Status: {{ order.status }}</div>
+
+      {% if order.status == "Pending" %}
+      <form method="POST" action="{% url 'cancel_order' order.id %}" style="display:inline;">
+        {% csrf_token %}
+        <button type="submit" class="btn-cancel">Cancel</button>
+      </form>
+      {% endif %}
+
+      <button class="btn-download" onclick="alert('Download feature coming soon!')">Download Receipt</button>
+    </div>
+    {% endfor %}
+  </div>
+
+  <!-- This shows when no orders match filter -->
+  <div id="emptyMessage" class="empty-animation hidden">
+    <div class="box-animation">
+      <div class="box"></div>
+      <div class="lid"></div>
+    </div>
+    <p>No orders found in this category.</p>
+    <a href="{% url 'products' %}" class="shop-now-btn">Shop Now</a>
+  </div>
+</div>
+
+<script>
+  function filterOrders(status) {
+    let cards = document.querySelectorAll('.order-card');
+    let emptyMessage = document.getElementById('emptyMessage');
+    let hasVisible = false;
+
+    cards.forEach(card => {
+      if (status === 'All' || card.getAttribute('data-status') === status) {
+        card.style.display = 'block';
+        hasVisible = true;
+      } else {
+        card.style.display = 'none';
+      }
+    });
+
+    if (!hasVisible) {
+      emptyMessage.classList.remove('hidden');
+    } else {
+      emptyMessage.classList.add('hidden');
+    }
+  }
+
+  // Show All by default
+  window.onload = function () {
+    filterOrders('All');
+  };
+</script>
+{% endblock %}

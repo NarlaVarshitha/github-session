@@ -1,0 +1,137 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Login | Eco-Pack</title>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css"/>
+  <link rel="stylesheet" href="{% static 'css/style1.css' %}">
+  <link href="https://fonts.googleapis.com/css2?family=Poppins:wght@400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    body {
+      font-family: 'Poppins', sans-serif;
+      background: linear-gradient(to right, #cce5cc, #a4d4ae);
+      height: 100vh;
+      margin: 0;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+    }
+
+    .login-box {
+      background: #fff;
+      padding: 40px;
+      border-radius: 20px;
+      width: 420px;
+      box-shadow: 0 0 15px rgba(0,0,0,0.15);
+    }
+
+    h1 {
+      text-align: center;
+      color: #2d6a4f;
+      margin-bottom: 10px;
+    }
+
+    .field {
+      position: relative;
+      margin-bottom: 20px;
+    }
+
+    input[type="text"], input[type="password"] {
+      width: 100%;
+      padding: 12px 14px;
+      border: 1px solid #ccc;
+      border-radius: 8px;
+    }
+
+    .eye-toggle {
+      position: absolute;
+      top: 50%;
+      right: 10px;
+      transform: translateY(-50%);
+      cursor: pointer;
+    }
+
+    input[type="submit"] {
+      width: 100%;
+      padding: 12px;
+      background: #2d6a4f;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      font-weight: bold;
+      transition: background 0.3s ease;
+    }
+
+    input[type="submit"]:hover {
+      background: #40916c;
+    }
+
+    .message {
+      color: crimson;
+      text-align: center;
+      font-weight: bold;
+      margin-bottom: 10px;
+    }
+  </style>
+</head>
+
+<body>
+  <div class="login-box">
+    <h1>Login</h1>
+    <p style="text-align: center; color: #555;">Welcome back to Eco-Pack</p>
+
+    <form method="POST">
+      {% csrf_token %}
+      {% if messages %}
+  {% for message in messages %}
+    <div class="message {{ message.tags }}">{{ message }}</div>
+  {% endfor %}
+{% endif %}
+
+
+      <div class="field">
+        <label>Username</label>
+        <input type="text" name="username" required>
+      </div>
+
+      <div class="field">
+        <label>Password</label>
+        <input type="password" name="password" id="password" required>
+        <i class="fa fa-eye eye-toggle" id="togglePassword"></i>
+      </div>
+
+      <div class="field">
+        <input type="submit" value="Login" id="loginBtn">
+      </div>
+
+      <div style="text-align: right; font-size: 13px;">
+        <a href="{% url 'password_reset' %}" style="color: #2d6a4f;">Forgot Password?</a>
+      </div>
+
+      <div style="text-align: center; margin-top: 20px;">
+        Don't have an account? <a href="{% url 'signup' %}" style="color: #2d6a4f; font-weight: 600;">Create one</a>
+      </div>
+    </form>
+  </div>
+
+  <script>
+    const togglePassword = document.getElementById("togglePassword");
+    const password = document.getElementById("password");
+
+    togglePassword.addEventListener("click", () => {
+      if (password.type === "password") {
+        password.type = "text";
+        togglePassword.classList.remove("fa-eye");
+        togglePassword.classList.add("fa-eye-slash");
+      } else {
+        password.type = "password";
+        togglePassword.classList.remove("fa-eye-slash");
+        togglePassword.classList.add("fa-eye");
+      }
+    });
+  </script>
+</body>
+</html>

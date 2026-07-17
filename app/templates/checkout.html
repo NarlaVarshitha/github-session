@@ -1,0 +1,249 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Checkout | Eco-Pack</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/style1.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        .payment-details { display: none; margin-top: 20px; animation: fadeIn 0.4s ease-in-out; }
+        @keyframes fadeIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+
+        .credit-card-container {
+            background: linear-gradient(135deg, #4e54c8, #8f94fb);
+            color: white;
+            max-width: 350px;
+            border-radius: 15px;
+            padding: 20px;
+            margin-top: 15px;
+            font-family: 'Courier New', Courier, monospace;
+            box-shadow: 0 8px 20px rgba(0, 0, 0, 0.2);
+        }
+
+        .credit-card-container div { margin-bottom: 10px; font-size: 16px; }
+        .credit-input {
+            display: block;
+            width: 100%;
+            padding: 10px;
+            margin-bottom: 10px;
+            border-radius: 8px;
+            border: 1px solid #ccc;
+        }
+
+        .paypal-info, .cod-message {
+            background-color: #f9f9f9;
+            padding: 15px;
+            border-left: 5px solid #28a745;
+            border-radius: 8px;
+            margin-top: 15px;
+        }
+
+        .checkout-section h1 {
+            text-align: center;
+            margin-bottom: 30px;
+            font-size: 32px;
+        }
+
+        .checkout-container {
+            display: flex;
+            flex-wrap: wrap;
+            justify-content: space-between;
+            gap: 30px;
+        }
+
+        .checkout-form, .cart-summary {
+            flex: 1;
+            min-width: 300px;
+        }
+
+        .summary-row {
+            display: flex;
+            justify-content: space-between;
+            margin-bottom: 10px;
+        }
+
+        .summary-row.total {
+            font-weight: bold;
+            font-size: 18px;
+        }
+
+       
+        label {
+            font-weight: 600;
+        }
+
+        input:invalid {
+            border-color: red;
+        }
+
+        .extra-actions {
+            margin-top: 30px;
+            text-align: center;
+        }
+
+        @media screen and (max-width: 768px) {
+            .checkout-container {
+                flex-direction: column;
+            }
+        }
+    </style>
+</head>
+<body>
+<!-- Navbar -->
+<nav class="navbar">
+    <div class="container">
+        <a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'img/logo2.png' %}" alt="Eco-Pack Logo">
+            <span>Eco-Pack</span>
+        </a>
+        <div class="nav-links">
+            <ul>
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a href="{% url 'products' %}">Products</a></li>
+                {% if user.is_authenticated %}
+                    <li>
+                        <a href="{% url 'cart_view' %}" class="cart-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count" id="cart-count">{{ cart_count }}</span>
+                        </a>
+                    </li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}" class="btn-login">Login</a></li>
+                    <li><a href="{% url 'signup' %}" class="btn-login">Signup</a></li>
+                {% endif %}
+            </ul>
+        </div>
+        <div class="mobile-menu-btn">
+            <i class="fas fa-bars"></i>
+        </div>
+    </div>
+</nav>
+
+<!-- Checkout Section -->
+<section class="checkout-section section-padding">
+    <div class="container">
+        <h1>Checkout</h1>
+        <div class="checkout-container">
+            <!-- Form -->
+            <div class="checkout-form">
+                <form method="POST" action="{% url 'place_order' %}" id="checkoutForm" novalidate>
+                    {% csrf_token %}
+                    <h2>Shipping Information</h2>
+                    <div class="form-group">
+                        <label for="fullName">Full Name</label>
+                        <input type="text" id="fullName" name="fullName" required pattern="[A-Za-z\s]{3,}" title="Enter at least 3 characters using only letters">
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="email">Email</label>
+                            <input type="email" id="email" name="email" required pattern="^[a-zA-Z0-9._%+-]+@gmail\.com$" title="Must be a valid Gmail address">
+                        </div>
+                        <div class="form-group">
+                            <label for="phone">Phone</label>
+                            <input type="tel" id="phone" name="phone" required pattern="[0-9]{10}" title="Phone number must be 10 digits">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="address">Address</label>
+                        <input type="text" id="address" name="address" required>
+                    </div>
+
+                    <div class="form-row">
+                        <div class="form-group">
+                            <label for="city">City</label>
+                            <input type="text" id="city" name="city" required pattern="[A-Za-z\s]+" title="Only letters allowed">
+                        </div>
+                        <div class="form-group">
+                            <label for="zip">ZIP Code</label>
+                            <input type="text" id="zip" name="zip" required pattern="[0-9]{6}" title="ZIP must be 6 digits">
+                        </div>
+                    </div>
+
+                    <div class="form-group">
+                        <label for="country">Country</label>
+                        <select id="country" name="country" required>
+                            <option value="">Select Country</option>
+                            <option value="IN">India</option>
+                            <option value="US">United States</option>
+                            <option value="UK">United Kingdom</option>
+                            <option value="CA">Canada</option>
+                            <option value="AU">Australia</option>
+                        </select>
+                    </div>
+
+                    <h2>Payment Method</h2>
+                    <div class="payment-methods">
+                        <div>
+                            <input type="radio" id="creditCard" name="payment" value="credit" onclick="showPaymentDetails('creditcard')" required>
+                            <label for="creditCard">Credit Card</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="paypalOption" name="payment" value="paypal" onclick="showPaymentDetails('paypal')">
+                            <label for="paypalOption">PayPal</label>
+                        </div>
+                        <div>
+                            <input type="radio" id="codOption" name="payment" value="cod" onclick="showPaymentDetails('cod')">
+                            <label for="codOption">Cash on Delivery</label>
+                        </div>
+                    </div>
+
+                    <div id="creditcard" class="payment-details">
+                        <input type="text" class="credit-input" placeholder="Cardholder Name" name="cc_name">
+                        <input type="number" class="credit-input" placeholder="Card Number" name="cc_number">
+                        <input type="number" class="credit-input" placeholder="MM/YY" name="cc_expiry">
+                        <input type="number" class="credit-input" placeholder="CVV" name="cc_cvv">
+                    </div>
+
+                    <div id="paypal" class="payment-details">
+                        <div class="paypal-info">
+                            <p>🔐 You will be redirected to PayPal to complete the payment securely.</p>
+                            <p>We do not store any of your payment information.</p>
+                        </div>
+                    </div>
+
+                    <div id="cod" class="payment-details">
+                        <div class="cod-message">
+                            <p>📦 Your order will be shipped and you can pay when it arrives.</p>
+                            <p>No need to pay now — easy and safe!</p>
+                        </div>
+                    </div>
+
+                    <button type="submit" class="btn-primary">Place Order</button>
+                </form>
+
+                
+            </div>
+
+            <!-- Order Summary -->
+            <div class="cart-summary">
+                <h3>Order Summary</h3>
+                <div class="summary-details">
+                    <div class="summary-row">
+                        <span>Subtotal</span>
+                        <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
+                    </div>
+                    <div class="summary-row">
+                        <span>Shipping</span>
+                        <span id="shipping">${{ shipping_cost|floatformat:2 }}</span>
+                    </div>
+                    <div class="summary-row total">
+                        <span>Total</span>
+                        <span id="total">${{ total|floatformat:2 }}</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</section>
+
+<script src="{% static 'js/main.js' %}"></script>
+</body>
+</html>

@@ -1,0 +1,136 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Shopping Cart | Eco-Pack</title>
+    
+    <!-- FontAwesome & Google Fonts -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+    
+    <!-- Stylesheets -->
+    <link rel="stylesheet" href="{% static 'css/style1.css' %}">
+    <link rel="stylesheet" href="{% static 'css/components.css' %}">
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    
+    <!-- jQuery -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+    <!-- Navigation Bar -->
+    <nav class="navbar">
+        <div class="container">
+            <a href="{% url 'index' %}" class="logo">
+                <img src="{% static 'img/logo2.png' %}" alt="Eco-Pack Logo">
+                <span>Eco-Pack</span>
+            </a>
+
+          
+
+
+            <div class="nav-links">
+                <ul>
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'products' %}">Products</a></li>
+
+                    {% if user.is_authenticated %}
+                     
+                    <li><a href="{% url 'order_tracking' %}">My Orders</a></li>
+                        <li style="color: #2e7d32; font-weight: 600;">Welcome, {{ user.username }}</li>
+                        <li><a href="{% url 'logout' %}" class="btn-login">Logout</a></li>
+                    {% else %}
+                        <li><a href="{% url 'login' %}" class="btn-login">Login</a></li>
+                    {% endif %}
+
+                    <li>
+                        <a href="{% url 'cart_view' %}" class="cart-icon">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count">{{ cart_count }}</span>
+                        </a>
+                    </li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+
+    <!-- Shopping Cart Section -->
+    <section class="cart-section section-padding">
+        <div class="container">
+            <h1>Your Shopping Cart</h1>
+
+            <div class="cart-container">
+                <div class="cart-items" id="cartItems">
+                    {% if cart_items %}
+                    <ul>
+                        {% for item in cart_items %}
+                        <li class="cart-item" id="cart-item-{{ item.id }}" style="display: flex; align-items: center; justify-content: space-between; gap: 20px; padding: 15px 0; border-bottom: 1px solid #eee;">
+                            
+                            <!-- Product Image -->
+                            <div class="cart-item-image" style="flex-shrink: 0;">
+                                <img src="{{ item.product.image.url }}" alt="{{ item.product.name }}" style="width: 100px; height: 100px; object-fit: cover; border-radius: 12px;">
+                            </div>
+                    
+                            <!-- Product Details -->
+                            <div class="cart-item-details" style="flex: 1;">
+                                <a href="{% url 'product_detail' item.product.id %}" class="product-link" style="font-weight: 600; font-size: 18px; color: #2e7d32; text-decoration: none;">
+                                    {{ item.product.name }}
+                                </a>
+                                <div class="item-price" style="margin-top: 5px; font-size: 16px; color: #444;">
+                                    ${{ item.product.price|floatformat:2 }}
+                                </div>
+                            </div>
+                    
+                            <!-- Quantity Controls -->
+                            <div class="quantity-control" style="display: flex; align-items: center; gap: 5px;">
+                                <button class="decrease-btn" data-item-id="{{ item.id }}" style="padding: 5px 10px;">-</button>
+                                <input type="number" class="quantity-input" data-item-id="{{ item.id }}" value="{{ item.quantity }}">
+                                <button class="increase-btn" data-item-id="{{ item.id }}" style="padding: 5px 10px;">+</button>
+                            </div>
+                    
+                            <!-- Remove Button -->
+                            <button class="remove-item" data-item-id="{{ item.id }}" style="background-color: #d32f2f; color: white; border: none; padding: 8px 14px; border-radius: 6px; cursor: pointer;">
+                                Remove
+                            </button>
+                        </li>
+                        {% endfor %}
+                    </ul>
+                    
+                    {% else %}
+                        <div class="empty-cart">
+                            <i class="fas fa-shopping-cart"></i>
+                            <p>Your cart is empty</p>
+                            <a href="{% url 'products' %}" class="btn-primary">Continue Shopping</a>
+                        </div>
+                    {% endif %}
+                </div>
+                
+                <!-- Order Summary -->
+                <div class="cart-summary">
+                    <h3>Order Summary</h3>
+                    <div class="summary-details">
+                        <div class="summary-row">
+                            <span>Subtotal</span>
+                            <span id="subtotal">${{ subtotal|floatformat:2 }}</span>
+                        </div>
+                        <div class="summary-row">
+                            <span>Shipping</span>
+                            <span id="shipping">${{ shipping_cost|floatformat:2 }}</span>
+                        </div>
+                        <div class="summary-row total">
+                            <span>Total</span>
+                            <span id="total">${{ total|floatformat:2 }}</span>
+                        </div>
+                    </div>
+                    <button id="buyNow" class="btn-primary" {% if not cart_items %}disabled{% endif %} onclick="window.location.href='{% url 'checkout' %}'">Buy Now</button>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- JavaScript -->
+    <script src="{% static 'js/cart.js' %}"></script>
+</body>
+</html>

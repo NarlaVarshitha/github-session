@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+{% load static %}
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Our Products | Eco-Pack</title>
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <link rel="stylesheet" href="{% static 'css/products.css' %}">
+    
+    <link rel="stylesheet" href="{% static 'css/responsive.css' %}">
+    <link href="https://fonts.googleapis.com/css2?family=Montserrat:wght@400;700&family=Open+Sans:wght@400;600&display=swap" rel="stylesheet">
+
+    <!-- CSRF Token for JS -->
+    <meta name="csrf-token" content="{{ csrf_token }}">
+    <style>
+        .message-container {
+            margin: 20px auto;
+            max-width: 800px;
+            text-align: center;
+        }
+        .alert {
+            padding: 12px 20px;
+            border-radius: 8px;
+            margin-bottom: 15px;
+            color: #155724;
+            background-color: #d4edda;
+            border: 1px solid #c3e6cb;
+            font-weight: 500;
+        }
+    </style>
+</head>
+<body>
+
+<!-- Navigation -->
+<nav class="navbar">
+    <div class="container">
+        <a href="{% url 'index' %}" class="logo">
+            <img src="{% static 'img/logo2.png' %}" alt="Eco-Pack Logo">
+            <span>Eco-Pack</span>
+        </a>
+     
+       
+
+        <div class="nav-links">
+            <ul>
+                <li><a href="{% url 'index' %}">Home</a></li>
+                <li><a href="{% url 'products' %}">Products</a></li>
+                {% if user.is_authenticated %}
+                 
+                <li><a href="{% url 'order_tracking' %}">My Orders</a></li>
+                    <li>
+                        <a href="{% url 'cart_view' %}">
+                            <i class="fas fa-shopping-cart"></i>
+                            <span class="cart-count" id="cartCount">{{ cart_count }}</span>
+                        </a>
+                    </li>
+                    <li><a href="{% url 'logout' %}">Logout</a></li>
+                {% else %}
+                    <li><a href="{% url 'login' %}">Login</a></li>
+                    <li><a href="{% url 'signup' %}">Signup</a></li>
+                {% endif %}
+            </ul>
+        </div>
+    </div>
+</nav>
+
+
+
+<!-- Product Section -->
+<section class="products-section section-padding">
+    <div class="container">
+        <h1>Our Eco-Friendly Products</h1>
+        <div class="products-filter">
+            <div class="search-bar">
+                <input type="text" placeholder="Search products..." id="searchInput">
+                <button><i class="fas fa-search"></i></button>
+            </div>
+            <div class="filter-options">
+                <select id="categoryFilter">
+                    <option value="">All Categories</option>
+                    {% for category in categories %}
+                        <option value="{{ category.name }}" {% if category.name == request.GET.category %}selected{% endif %}>
+                            {{ category.name }}
+                        </option>
+                    {% endfor %}
+                </select>
+            </div>
+        </div>
+
+        <div class="product-grid" id="allProducts">
+            {% for product in products %}
+            <div class="product-card" data-category="{{ product.category.name }}">
+                <a href="{% url 'product_detail' product.id %}">
+                    <img src="{{ product.image.url }}" alt="{{ product.name }}">
+                </a>
+                <div class="product-title">
+                    <a href="{% url 'product_detail' product.id %}" style="text-decoration: none; color: inherit;">
+                        {{ product.name }}
+                    </a>
+                </div>
+                <div class="product-price">${{ product.price }}</div>
+
+                {% if user.is_authenticated %}
+                    <button class="add-to-cart" data-product-id="{{ product.id }}">
+                        <i class="fas fa-cart-plus"></i> Add to Cart
+                    </button>
+                {% else %}
+                    <p><a href="{% url 'login' %}">add to cart</a></p>
+                {% endif %}
+            </div>
+            {% endfor %}
+        </div>
+    </div>
+</section>
+
+<!-- Footer -->
+<footer class="footer">
+    <div class="container">
+        <div class="footer-content">
+            <div class="footer-section">
+                <h3>Eco-Pack</h3>
+                <p>Sustainable packaging solutions for businesses and individuals who care about the environment.</p>
+                <div class="social-links">
+                    <a href="#"><i class="fab fa-facebook-f"></i></a>
+                    <a href="#"><i class="fab fa-instagram"></i></a>
+                    <a href="#"><i class="fab fa-twitter"></i></a>
+                    <a href="#"><i class="fab fa-linkedin-in"></i></a>
+                </div>
+            </div>
+            <div class="footer-section">
+                <h3>Quick Links</h3>
+                <ul>
+                    <li><a href="{% url 'index' %}">Home</a></li>
+                    <li><a href="{% url 'products' %}">Products</a></li>
+                </ul>
+            </div>
+            <div class="footer-section">
+                <h3>Contact Us</h3>
+                <p><i class="fas fa-map-marker-alt"></i> 123 Green Street, Eco City</p>
+                <p><i class="fas fa-phone"></i> (123) 456-7890</p>
+                <p><i class="fas fa-envelope"></i> info@eco-pack.com</p>
+            </div>
+        </div>
+        <div class="footer-bottom">
+            <p>&copy; 2023 Eco-Pack. All Rights Reserved.</p>
+        </div>
+    </div>
+</footer>
+
+<!-- Scripts -->
+<script src="{% static 'js/products.js' %}"></script>
+
+<script>
+    document.addEventListener("DOMContentLoaded", function () {
+        fetchCartCount();
+    });
+</script>
+
+
+
+
+</body>
+</html>
